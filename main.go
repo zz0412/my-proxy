@@ -9,10 +9,9 @@ import (
 	"runtime"
 
 	"./proxy"
-
-	"github.com/goji/httpauth"
 	"github.com/gorilla/mux"
 	"github.com/yvasiyarov/gorelic"
+	//"fmt"
 )
 
 var cfg proxy.Config
@@ -30,30 +29,13 @@ func startProxy() {
 	r := mux.NewRouter()
 	s := proxy.NewEndpoint(&cfg)
 
-	go startFrontend(&cfg, s)
-
-	r.Handle("/miner/{diff:.+}/{id:.+}", s)
+	r.Handle("/", s)
 	err := http.ListenAndServe(cfg.Proxy.Listen, r)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func startFrontend(cfg *proxy.Config, s *proxy.ProxyServer) {
-	r := mux.NewRouter()
-	r.HandleFunc("/stats", s.StatsIndex)
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./www/")))
-	var err error
-	if len(cfg.Frontend.Password) > 0 {
-		auth := httpauth.SimpleBasicAuth(cfg.Frontend.Login, cfg.Frontend.Password)
-		err = http.ListenAndServe(cfg.Frontend.Listen, auth(r))
-	} else {
-		err = http.ListenAndServe(cfg.Frontend.Listen, r)
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 func startNewrelic() {
 	if cfg.NewrelicEnabled {
@@ -67,6 +49,7 @@ func startNewrelic() {
 
 func readConfig(cfg *proxy.Config) {
 	configFileName := "config.json"
+	//fmt.Println(os.Args)
 	if len(os.Args) > 1 {
 		configFileName = os.Args[1]
 	}

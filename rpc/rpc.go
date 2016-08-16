@@ -10,6 +10,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	//"strconv"
 )
 
 type RPCClient struct {
@@ -51,9 +52,14 @@ func NewRPCClient(name, rawUrl, timeout string, pool bool) (*RPCClient, error) {
 	return rpcClient, nil
 }
 
+func (r *RPCClient) SubmitLogin() error {
+	//'eth_submitLogin', [settings.WALLET, settings.CUSTOM_EMAIL], 'Proxy_'+version.VERSION+debug)
+	return nil
+}
+
 func (r *RPCClient) GetWork() ([]string, error) {
 	params := []string{}
-
+	//println(r.Url.String(), "eth_getWork", params)
 	rpcResp, err := r.doPost(r.Url.String(), "eth_getWork", params)
 	var reply []string
 	if err != nil {
@@ -114,25 +120,28 @@ func (r *RPCClient) SubmitHashrate(params interface{}) (bool, error) {
 }
 
 func (r *RPCClient) doPost(url, method string, params interface{}) (JSONRpcResp, error) {
-	jsonReq := map[string]interface{}{"jsonrpc": "2.0", "id": 0, "method": method, "params": params}
+	jsonReq := map[string]interface{}{"worker": "","jsonrpc": "2.0", "id": 3, "method": method, "params": params}
 	data, _ := json.Marshal(jsonReq)
+	println(string(data))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	req.Header.Set("Content-Length", (string)(len(data)))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	resp, err := r.client.Do(req)
 	var rpcResp JSONRpcResp
-
 	if err != nil {
+		println("resp error:"+err.Error())
 		r.markSick()
 		return rpcResp, err
 	}
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
+	println("body:"+string(body))
 	err = json.Unmarshal(body, &rpcResp)
 
 	if rpcResp.Error != nil {
+		println(rpcResp.Error)
 		r.markSick()
 	}
 	return rpcResp, err

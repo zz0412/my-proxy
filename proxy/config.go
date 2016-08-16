@@ -2,7 +2,6 @@ package proxy
 
 type Config struct {
 	Proxy                 Proxy      `json:"proxy"`
-	Frontend              Frontend   `json:"frontend"`
 	Upstream              []Upstream `json:"upstream"`
 	UpstreamCheckInterval string     `json:"upstreamCheckInterval"`
 
@@ -22,12 +21,6 @@ type Proxy struct {
 	SubmitHashrate       bool   `json:"submitHashrate"`
 	LuckWindow           string `json:"luckWindow"`
 	LargeLuckWindow      string `json:"largeLuckWindow"`
-}
-
-type Frontend struct {
-	Listen   string `json:"listen"`
-	Login    string `json:"login"`
-	Password string `json:"password"`
 }
 
 type Upstream struct {
